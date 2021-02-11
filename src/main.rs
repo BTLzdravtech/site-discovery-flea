@@ -64,6 +64,9 @@ const USE_DATA_PROPERTY_ARGUMENT: &str = "use-data-property";
 const LOG_LEVEL_ARGUMENT: &str = "log-level";
 const LOG_LEVEL_DEFAULT_VALUE: &str = "info";
 
+const IGNORE_LIST_ARGUMENT: &str = "ignore-list";
+const IGNORE_LIST_SHORT_ARGUMENT: &str = "i";
+
 const ERROR_EXIT_CODE: i32 = 1;
 
 fn main() {
@@ -118,6 +121,13 @@ fn main() {
                 .takes_value(true).required(false)
                 .default_value(LOG_LEVEL_DEFAULT_VALUE)
         )
+        .arg(
+            Arg::with_name(IGNORE_LIST_ARGUMENT)
+                .short(IGNORE_LIST_SHORT_ARGUMENT)
+                .help("set site ignore list")
+                .long(IGNORE_LIST_ARGUMENT)
+                .takes_value(true).required(false)
+        )
         .get_matches();
 
     let working_directory: &Path = get_argument_path_value(
@@ -137,6 +147,12 @@ fn main() {
     let include_domains_with_www = matches.occurrences_of(INCLUDE_DOMAINS_WITH_WWW) > 0;
     let include_custom_domains = matches.occurrences_of(INCLUDE_CUSTOM_PORTS_OPTION) > 0;
 
+    let ignore_list: Vec<&str> = if matches.is_present(IGNORE_LIST_ARGUMENT) {
+        matches.value_of(IGNORE_LIST_ARGUMENT).unwrap().split(",").collect()
+    } else { Vec::new() };
+
+    debug!("ignore list '{:?}'", &ignore_list);
+
     info!("[~] collect virtual hosts..");
     info!("- include domains with custom ports: {}", include_custom_domains);
     let mut vhosts: Vec<VirtualHost> = Vec::new();
@@ -145,14 +161,14 @@ fn main() {
     debug!("- nginx vhosts root: '{}'", nginx_vhosts_path.display());
 
     let nginx_vhosts = get_nginx_vhosts(nginx_vhosts_path);
-    let mut filtered_nginx_vhosts: Vec<VirtualHost> = filter_vhosts(&nginx_vhosts, include_custom_domains);
+    let mut filtered_nginx_vhosts: Vec<VirtualHost> = filter_vhosts(&nginx_vhosts, include_custom_domains, &ignore_list);
     vhosts.append(&mut filtered_nginx_vhosts);
 
     let apache_vhosts_path: &Path = get_apache_vhosts_path(&matches);
     debug!("apache vhosts root: '{}'", apache_vhosts_path.display());
 
     let apache_vhosts = get_apache_vhosts(apache_vhosts_path);
-    let mut filtered_apache_vhosts: Vec<VirtualHost> = filter_vhosts(&apache_vhosts, include_custom_domains);
+    let mut filtered_apache_vhosts: Vec<VirtualHost> = filter_vhosts(&apache_vhosts, include_custom_domains, &ignore_list);
     vhosts.append(&mut filtered_apache_vhosts);
 
     let sites: Vec<Site> = get_sites_from_vhosts(vhosts, include_domains_with_www);

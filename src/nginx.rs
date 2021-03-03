@@ -54,22 +54,22 @@ pub mod nginx {
     }
 
     fn get_domain_search_regex_for_nginx_vhost() -> Regex {
-        return Regex::new("server_name[\\s\t]+([a-z0-9.\\-]+).*;").unwrap();
+        return Regex::new("(?:^|^[^#]+)server_name[\\s\t]+([a-z0-9.\\-]+).*;").unwrap();
     }
 
     fn get_nginx_vhost_section_start_regex() -> Regex {
-        return Regex::new("server[\\s\t]+\\{").unwrap();
+        return Regex::new("(?:^|^[^#]+)server[\\s\t]+\\{").unwrap();
     }
 
     fn get_nginx_redirect_with_301_regex(detect_302_redirects: bool) -> Regex {
         return if detect_302_redirects {
-            Regex::new("(^|^[^#]+)return[\\s\t]+(?:301|302)[\\s\t]+http.*[\\s\t]*$").unwrap()
+            Regex::new("(?:^|^[^#]+)return[\\s\t]+(?:301|302)[\\s\t]+http.*[\\s\t]*$").unwrap()
         } else {
-            Regex::new("(^|^[^#]+)return[\\s\t]+301[\\s\t]+http.*[\\s\t]*$").unwrap()
+            Regex::new("(?:^|^[^#]+)return[\\s\t]+301[\\s\t]+http.*[\\s\t]*$").unwrap()
         }
     }
 
     fn get_nginx_vhost_port_regex() -> Regex {
-        return Regex::new("[\\s\t]*listen[\\s\t]+(\\d+)([\\s\t]+ssl)?;").unwrap();
+        return Regex::new("(?:^|^[^#]+)[\\s\t]*listen[\\s\t]+(\\d+)([\\s\t]+ssl)?;").unwrap();
     }
 }

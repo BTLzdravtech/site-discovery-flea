@@ -5,6 +5,7 @@ pub mod filter {
 
     pub fn filter_vhosts(vhosts: &Vec<VirtualHost>, include_custom_domains: bool, ignore_list: &Vec<&str>) -> Vec<VirtualHost> {
         let mut results: Vec<VirtualHost> = Vec::new();
+        let mut results_dedup: Vec<VirtualHost> = Vec::new();
 
         for vhost in vhosts {
             if vhost_add_permitted(vhost, &results, include_custom_domains, &ignore_list) {
@@ -13,7 +14,15 @@ pub mod filter {
             }
         }
 
-        return results
+        for result in &results {
+            if result.port == DEFAULT_HTTP_PORT && vec_contains_same_domain_with_https_port(&results, &result.domain) {
+                debug!("- remove vhost '{}' - has both 80 and 443", result.to_string());
+                continue;
+            }
+            results_dedup.push(result.to_owned());
+        }
+
+        return results_dedup
     }
 
     fn vhost_add_permitted(vhost: &VirtualHost, buffer: &Vec<VirtualHost>,
@@ -51,5 +60,11 @@ pub mod filter {
                                               domain: &String, port: i32) -> bool {
         vhosts.iter()
               .find(|vhost| &vhost.domain == domain && vhost.port == port).is_some()
+    }
+
+    fn vec_contains_same_domain_with_https_port(vhosts: &Vec<VirtualHost>,
+                                                domain: &String) -> bool {
+        vhosts.iter()
+            .find(|vhost| &vhost.domain == domain && vhost.port == DEFAULT_HTTPS_PORT).is_some()
     }
 }

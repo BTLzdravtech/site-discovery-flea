@@ -70,6 +70,6 @@ pub mod nginx {
     }
 
     fn get_nginx_vhost_port_regex() -> Regex {
-        return Regex::new("(?:^|^[^#]+)[\\s\t]*listen[\\s\t]+(\\d+)([\\s\t]+ssl)?;").unwrap();
+        return Regex::new("(?:^|^[^#]+)[\\s\t]*listen[\\s\t]+(\\d+).*;").unwrap();
     }
 }

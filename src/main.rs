@@ -70,6 +70,8 @@ const IGNORE_LIST_SHORT_ARGUMENT: &str = "i";
 
 const DETECT_302_REDIRECTS_ARGUMENT: &str = "redirect-302";
 
+const EXCLUDE_HTTP: &str = "exclude-http";
+
 const ERROR_EXIT_CODE: i32 = 1;
 
 fn main() {
@@ -136,6 +138,11 @@ fn main() {
                 .long(DETECT_302_REDIRECTS_ARGUMENT)
                 .help("detect http code 302 as redirects")
         )
+        .arg(
+            Arg::with_name(EXCLUDE_HTTP)
+                .long(EXCLUDE_HTTP)
+                .help("exclude all http domains")
+        )
         .get_matches();
 
     let working_directory: &Path = get_argument_path_value(
@@ -161,6 +168,8 @@ fn main() {
 
     let detect_302_redirects = matches.occurrences_of(DETECT_302_REDIRECTS_ARGUMENT) > 0;
 
+    let exclude_http = matches.occurrences_of(EXCLUDE_HTTP) > 0;
+
     debug!("ignore list '{:?}'", &ignore_list);
 
     info!("[~] collect virtual hosts..");
@@ -181,7 +190,7 @@ fn main() {
     let mut filtered_apache_vhosts: Vec<VirtualHost> = filter_vhosts(&apache_vhosts, include_custom_domains, &ignore_list);
     vhosts.append(&mut filtered_apache_vhosts);
 
-    let sites: Vec<Site> = get_sites_from_vhosts(vhosts, include_domains_with_www);
+    let sites: Vec<Site> = get_sites_from_vhosts(vhosts, include_domains_with_www, exclude_http);
 
     let json;
 

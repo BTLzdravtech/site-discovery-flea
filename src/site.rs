@@ -2,9 +2,13 @@ pub mod site {
     use crate::{DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT, WWW_SEARCH_PATTERN};
     use crate::domain::domain::{Site, VirtualHost};
 
-    pub fn get_sites_from_vhosts(vhosts: Vec<VirtualHost>, include_domains_with_www: bool) -> Vec<Site> {
+    pub fn get_sites_from_vhosts(vhosts: Vec<VirtualHost>, include_domains_with_www: bool, exclude_http: bool) -> Vec<Site> {
         let sites: Vec<Site> = vhosts.iter()
             .filter(|vhost| {
+                if vhost.port == DEFAULT_HTTP_PORT && exclude_http {
+                    return false
+                }
+
                 let domain_in_lowercase = vhost.domain.to_lowercase();
 
                 let domain_starts_with_www = domain_in_lowercase.starts_with(WWW_SEARCH_PATTERN);

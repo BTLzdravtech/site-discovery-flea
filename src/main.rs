@@ -53,7 +53,7 @@ const WORK_DIR_ARGUMENT: &str = "work-dir";
 const WORK_DIR_SHORT_ARGUMENT: &str = "d";
 
 const NGINX_VHOSTS_PATH: &str = "/etc/nginx/conf.d";
-const APACHE_VHOSTS_PATH: &str = "/etc/httpd/conf.d";
+const APACHE_VHOSTS_PATH: &str = "/etc/apache2/sites-enabled";
 
 const NGINX_VHOSTS_PATH_ARGUMENT: &str = "nginx-vhosts-path";
 const NGINX_VHOSTS_PATH_SHORT_ARGUMENT: &str = "n";

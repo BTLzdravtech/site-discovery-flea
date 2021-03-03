@@ -375,6 +375,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "serde_json",
+ "wildmatch",
 ]
 
 [[package]]
@@ -475,6 +476,12 @@ name = "vec_map"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "05c78687fb1a80548ae3250346c3db86a80a7cdd77bda190189f2d0a0987c81a"
+
+[[package]]
+name = "wildmatch"
+version = "1.0.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d2399814fda0d6999a6bfe9b5c7660d836334deb162a09db8b73d5b38fd8c40a"
 
 [[package]]
 name = "winapi"

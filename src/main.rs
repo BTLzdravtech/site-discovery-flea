@@ -2,6 +2,7 @@
 extern crate log;
 extern crate log4rs;
 extern crate serde_json;
+extern crate wildmatch;
 
 use std::env;
 use std::path::Path;
@@ -67,6 +68,8 @@ const LOG_LEVEL_DEFAULT_VALUE: &str = "info";
 const IGNORE_LIST_ARGUMENT: &str = "ignore-list";
 const IGNORE_LIST_SHORT_ARGUMENT: &str = "i";
 
+const DETECT_302_REDIRECTS_ARGUMENT: &str = "redirect-302";
+
 const ERROR_EXIT_CODE: i32 = 1;
 
 fn main() {
@@ -128,6 +131,11 @@ fn main() {
                 .long(IGNORE_LIST_ARGUMENT)
                 .takes_value(true).required(false)
         )
+        .arg(
+            Arg::with_name(DETECT_302_REDIRECTS_ARGUMENT)
+                .long(DETECT_302_REDIRECTS_ARGUMENT)
+                .help("detect http code 302 as redirects")
+        )
         .get_matches();
 
     let working_directory: &Path = get_argument_path_value(
@@ -151,6 +159,8 @@ fn main() {
         matches.value_of(IGNORE_LIST_ARGUMENT).unwrap().split(",").collect()
     } else { Vec::new() };
 
+    let detect_302_redirects = matches.occurrences_of(DETECT_302_REDIRECTS_ARGUMENT) > 0;
+
     debug!("ignore list '{:?}'", &ignore_list);
 
     info!("[~] collect virtual hosts..");
@@ -160,7 +170,7 @@ fn main() {
     let nginx_vhosts_path: &Path = get_nginx_vhosts_path(&matches);
     debug!("- nginx vhosts root: '{}'", nginx_vhosts_path.display());
 
-    let nginx_vhosts = get_nginx_vhosts(nginx_vhosts_path);
+    let nginx_vhosts = get_nginx_vhosts(nginx_vhosts_path, detect_302_redirects);
     let mut filtered_nginx_vhosts: Vec<VirtualHost> = filter_vhosts(&nginx_vhosts, include_custom_domains, &ignore_list);
     vhosts.append(&mut filtered_nginx_vhosts);
 

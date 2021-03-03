@@ -8,7 +8,7 @@ pub mod nginx {
     use crate::ERROR_EXIT_CODE;
     use crate::webserver::webserver::{get_vhost_config_file_list, get_virtual_hosts_from_file};
 
-    pub fn get_nginx_vhosts(nginx_vhosts_path: &Path) -> Vec<VirtualHost> {
+    pub fn get_nginx_vhosts(nginx_vhosts_path: &Path, detect_302_redirects: bool) -> Vec<VirtualHost> {
         debug!("get virtual hosts from nginx configs");
         debug!("configs path '{}'", nginx_vhosts_path.display());
 
@@ -21,7 +21,7 @@ pub mod nginx {
                         debug!("processing vhost file '{}'", vhost_file.display());
 
                         let section_start_regex = get_nginx_vhost_section_start_regex();
-                        let redirect_with_301_regex = get_nginx_redirect_with_301_regex();
+                        let redirect_with_301_regex = get_nginx_redirect_with_301_regex(detect_302_redirects);
                         let port_search_regex = get_nginx_vhost_port_regex();
                         let domain_search_regex = get_domain_search_regex_for_nginx_vhost();
 
@@ -54,15 +54,19 @@ pub mod nginx {
     }
 
     fn get_domain_search_regex_for_nginx_vhost() -> Regex {
-        return Regex::new("server_name[\\s\t]+([a-z0-9.\\-]+);").unwrap();
+        return Regex::new("server_name[\\s\t]+([a-z0-9.\\-]+).*;").unwrap();
     }
 
     fn get_nginx_vhost_section_start_regex() -> Regex {
         return Regex::new("server[\\s\t]+\\{").unwrap();
     }
 
-    fn get_nginx_redirect_with_301_regex() -> Regex {
-        return Regex::new("[\t\\s]*return[\\s\t]+301[\\s\t]+http.*[\\s\t]*$").unwrap();
+    fn get_nginx_redirect_with_301_regex(detect_302_redirects: bool) -> Regex {
+        return if detect_302_redirects {
+            Regex::new("(^|^[^#]+)return[\\s\t]+(?:301|302)[\\s\t]+http.*[\\s\t]*$").unwrap()
+        } else {
+            Regex::new("(^|^[^#]+)return[\\s\t]+301[\\s\t]+http.*[\\s\t]*$").unwrap()
+        }
     }
 
     fn get_nginx_vhost_port_regex() -> Regex {

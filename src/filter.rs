@@ -1,6 +1,7 @@
 pub mod filter {
     use crate::{DEFAULT_HTTP_PORT, DEFAULT_HTTPS_PORT};
     use crate::domain::domain::VirtualHost;
+    use wildmatch::WildMatch;
 
     pub fn filter_vhosts(vhosts: &Vec<VirtualHost>, include_custom_domains: bool, ignore_list: &Vec<&str>) -> Vec<VirtualHost> {
         let mut results: Vec<VirtualHost> = Vec::new();
@@ -38,7 +39,8 @@ pub mod filter {
     }
 
     fn vhost_not_in_ignore_list(domain: &String, ignore_list: &Vec<&str>) -> bool {
-        !ignore_list.contains(&domain.as_str())
+        ignore_list.iter()
+            .find(|ignore| WildMatch::new(ignore).is_match(domain)).is_none()
     }
 
     fn vhost_has_standard_port(port: i32) -> bool {
